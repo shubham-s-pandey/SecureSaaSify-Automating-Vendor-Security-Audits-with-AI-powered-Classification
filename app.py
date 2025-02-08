@@ -2,6 +2,24 @@ import openpyxl
 import ollama
 import time
 import csv
+from tqdm import tqdm
+
+def print_ascii_header():
+    ascii_art = r"""
+
+
+ _____                          _____             _____ _  __       
+/  ___|                        /  ___|           /  ___(_)/ _|      
+\ `--.  ___  ___ _   _ _ __ ___\ `--.  __ _  __ _\ `--. _| |_ _   _ 
+ `--. \/ _ \/ __| | | | '__/ _ \`--. \/ _` |/ _` |`--. \ |  _| | | |
+/\__/ /  __/ (__| |_| | | |  __/\__/ / (_| | (_| /\__/ / | | | |_| |
+\____/ \___|\___|\__,_|_|  \___\____/ \__,_|\__,_\____/|_|_|  \__, |
+                                                               __/ |
+                                                              |___/ 
+                                                                                                  
+                                     Author: @shubham-s-pandey
+    """
+    print(ascii_art)
 
 def read_vendor_remarks(file_path, start_row=2, end_row=None):
     workbook = openpyxl.load_workbook(file_path)
@@ -18,7 +36,7 @@ def read_vendor_remarks(file_path, start_row=2, end_row=None):
 def classify_vendor_remarks(vendor_remarks):
     classified_results = []
     
-    for audit_question, remark in vendor_remarks:
+    for audit_question, remark in tqdm(vendor_remarks, desc="Classifying remarks", unit="remark"):
         prompt = f"As an expert auditor, review the following vendor remark in relation to SaaS security standards. " \
                  f"Classify the remark as either 'Compliant' or 'Non-Compliant' in one word. Then, provide a detailed " \
                  f"reasoning for your classification. Your response should include both a one-word classification and a detailed reason.\n\n" \
@@ -38,10 +56,12 @@ def classify_vendor_remarks(vendor_remarks):
         else:
             classification = "Non-Compliant"
             reason = result
-      
+        
         reason = f"{classification}: {reason}"
         
         classified_results.append((audit_question, remark, reason))
+        
+        print(f"Processed: {audit_question} -> {reason}")
         
         time.sleep(1)  
         
@@ -58,6 +78,8 @@ def write_classified_results_to_csv(classified_results, csv_file_path):
     print(f"Results have been saved to {csv_file_path}")
 
 def run_analysis(file_path, start_row=2, end_row=None, csv_file_path="classified_saas_security_remarks.csv"):
+    print_ascii_header()
+    
     vendor_remarks, workbook, sheet = read_vendor_remarks(file_path, start_row, end_row)
     
     classified_results = classify_vendor_remarks(vendor_remarks)
@@ -69,7 +91,6 @@ file_path = "~/SAAS_vendor_checklist.xlsx"
 start_row = int(input("Enter the start row (default is 2): ") or 2)
 end_row = input("Enter the end row (leave blank for the entire sheet): ")
 end_row = int(end_row) if end_row else None
-
 
 csv_file_path = "~/classified_vendor_remarks_saas_security.csv"
 run_analysis(file_path, start_row, end_row, csv_file_path)
