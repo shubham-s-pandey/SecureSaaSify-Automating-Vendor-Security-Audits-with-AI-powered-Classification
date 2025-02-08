@@ -1,4 +1,4 @@
-# SecureSaaSify: Automating Vendor Security Audits with AI-powered Classification
+# SecureSaaSify: Automating SaaS Security with AI-powered Classification
 
 ## Features:
 
